@@ -189,7 +189,7 @@ void kuzminnal::lab4()
  */
 void kuzminnal::lab5()
 {
-	double eps = 0.00001;
+	double eps = 1.e-8;
 	double* next = new double[N];
 	double norm = 0;
 	for(int i = 0; i < N; i++)
@@ -233,7 +233,7 @@ void kuzminnal::lab6()
 	double eps = 0.00001;
     double* prev = new double[N];
     double sum = 0;
-    double norm = 0;
+    bool IsContinue = true;
     for(int i = 0; i < N; i++)
     {
         x[i] = 0;
@@ -255,17 +255,18 @@ void kuzminnal::lab6()
                 sum += A[i][j] * prev[j];
             x[i] = (b[i] - sum) / A[i][i];
         }
-		norm = fabs(x[0] - prev[0]);
+        IsContinue = true;
         for(int i = 0; i < N; i++)
-		{
-			if(fabs(x[i] - prev[i]) > norm)
-			{
-				norm = fabs(x[i] - prev[i]);
-			}
-		}
-    } while(norm > eps);
+        {
+            if(fabs(x[i] - prev[i]) < eps)
+            {
+                IsContinue = false;
+                break;
+            }
+        }
+    } while(IsContinue == true);
+
     
-    delete[] prev;
 }
 
 
@@ -273,8 +274,94 @@ void kuzminnal::lab6()
 /**
  * Один из градиентных методов
  */
+ 
+ 
+void kuzminnal::GetRk(double* r, double* y){
+
+    double tmp;
+
+    for(int i = 0; i < N; i++)
+     {
+      tmp = 0;
+      for(int j = 0; j < N; j++)
+        {
+            tmp += A[i][j]*y[j];
+        }
+       r[i] = tmp - b[i];
+     }
+}
+
+void kuzminnal::GetUk(double* r,double* u){
+
+    double tmp;
+
+     for(int i = 0; i < N; i++)
+     {
+      tmp = 0;
+      for(int j = 0; j < N; j++)
+        {
+            tmp += A[i][j]*r[j];
+        }
+       u[i] = tmp;
+     }
+}
+
+double kuzminnal::ScalarMult(double* u,double* r){
+
+    double tmp = 0;
+
+        for(int i = 0; i < N;i++)
+            tmp += u[i]*r[i];
+
+    return tmp;
+} 
+ 
 void kuzminnal::lab7()
 {
+	const double eps = 0.0000000001;
+
+    double* r = new double[N];
+    double* yOld = new double[N];
+    double* yNew = new double[N];
+    double* tmp = new double[N];
+    double* u = new double[N];
+	double tau;
+    
+        for(int i = 0; i < N; i++)
+            yNew[i] = A[i][i];
+
+    
+
+    do{
+       for(int i = 0; i < N; i++)
+          {
+            yOld[i] = yNew[i];
+          }
+
+      GetRk(r, yOld);
+      GetUk(r, u);
+      tau = ScalarMult(u, r)/ScalarMult(u, u);
+
+        for(int i = 0; i < N; i++)
+          {
+            yNew[i] -= tau * r[i];
+          }
+
+        for(int i = 0; i < N; i++)
+          {
+            temp[i] = yNew[i] - yOld[i];
+          }
+
+    }while(sqrt(ScalarMult(tmp, tmp)) >= eps);
+
+    for(int i = 0; i < N; i++)
+        x[i] = yNew[i];
+
+    delete [] yOld;
+    delete [] yNew;
+    delete [] r;
+    delete [] tmp;
+    delete [] u;
 
 }
 
